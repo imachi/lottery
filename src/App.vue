@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <div class="seniority"><p>先週の担当者：</p><span>{{ beforePeopleNames }}</span></div>
-    <div class="dis-f">
+    <div class="mgn-b30"><p class="font-w-b">#先週の担当者</p><span class="font-w-b">{{ beforePeopleNames }}</span></div>
+    <div class="dis-f cnt-w mgn-a">
       <button @click="localStorageFind()">指名する</button>
       <i class="far fa-hand-point-left click-icon faa-horizontal animated"></i>
     </div>
-    <div class="dis-f">
-      <p>書記：<span>{{ syoki }}</span></p>
-      <p>司会：<span>{{ shikai }}</span></p>
+    <div class="dis-f cnt-w mgn-a">
+      <p class="w-50 font-20 font-w-b text-a-l navy">書記：<span class="bkg-line">{{ syoki }}</span></p>
+      <p class="w-50 font-20 font-w-b text-a-l navy">司会：<span class="bkg-line">{{ shikai }}</span></p>
     </div>
     <div class="message">{{ msg }}</div> 
-    <div>
+    <div class="word-b mgn-t40">
       <label v-for="(people,index) in initialPeoples" :key="index">
         <input type="checkbox" v-model="people.checked" @change="peopleFilter" /> {{ people.name }}
       </label> 
@@ -121,25 +121,33 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  width: 80%;
+  margin: auto;
   margin-top: 60px;
 }
 .dis-f {
   display: flex;
+}
+.cnt-w {
   width: 330px;
-  margin: auto;
   margin-bottom: 20px;
 }
-.dis-f p {
+.w-50 {
   width: 50%;
-  text-align: left;
-  font-size: 20px;
-  font-weight: bold;
+}
+.navy {
   color: #35495e;
 }
-.dis-f span {
+.font-20 {
+  font-size: 20px;
+}
+.text-a-l {
+  text-align: left;
+}
+.bkg-line {
   background: linear-gradient(transparent 70%, #f2b3a2 70%);
 }
-.dis-f button {
+button {
   appearance: none;
   outline: none;
   cursor: pointer;
@@ -153,7 +161,7 @@ export default {
   background-color: #fffbf4;
   box-shadow: inset 0 3px 0 rgba(255, 255, 255, 1), inset 0 -3px 0 rgba(0, 0, 0, 0.05);
 }
-.dis-f button:active {
+.button:active {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.50);
 }
 .click-icon {
@@ -163,14 +171,19 @@ export default {
   font-size: 22px;
   font-weight: bold;
 }
-.seniority {
+.mgn-b30 {
   margin-bottom: 30px;
 }
-.seniority p {
+.font-w-b {
   font-weight: bold;
-  margin: 0;
 }
-.seniority span {
-  font-weight: bold;
+.mgn-a {
+  margin: auto;
+}
+.mgn-t40 {
+  margin-top: 40px;
+}
+.word-b {
+  word-break: keep-all;
 }
 </style>
