@@ -1,64 +1,52 @@
 <template>
   <div id="app">
-    <div class="mgn-b30"><p class="font-w-b">#先週の担当者</p><span class="font-w-b">{{ beforePeopleNames }}</span></div>
-    <div class="dis-f cnt-w mgn-a">
-      <button @click="localStorageFind()">指名する</button>
+    <div class="last-week"><p class="last-week-text">#先週の担当者</p><span class="last-week-name">{{ beforePeopleNames }}</span></div>
+    <div class="choose-btn">
+      <button class="choose-btn-item" @click="localStorageFind()">指名する</button>
       <i class="far fa-hand-point-left click-icon faa-horizontal animated"></i>
     </div>
-    <div class="dis-f cnt-w mgn-a">
-      <p class="w-50 font-20 font-w-b text-a-l navy">書記：<span class="bkg-line">{{ syoki }}</span></p>
-      <p class="w-50 font-20 font-w-b text-a-l navy">司会：<span class="bkg-line">{{ shikai }}</span></p>
+    <div class="staff-wrap">
+      <p class="secretary">書記：<span class="secretary-text bkg-line">{{ syoki }}</span></p>
+      <p class="mc">司会：<span class="mc-text bkg-line">{{ shikai }}</span></p>
     </div>
     <div class="message">{{ msg }}</div> 
-    <div class="word-b mgn-t40">
-      <label v-for="(people,index) in initialPeoples" :key="index">
-        <input type="checkbox" v-model="people.checked" @change="peopleFilter" /> {{ people.name }}
-      </label> 
+    <form class="participant" @submit.prevent="addName">
+      <label>参加者: </label><input type="text" class="input-name" v-model="inputPeoplesName">
+    </form>
+    <div class="participant-wrap">
+      <span class="output-name" v-for="(names, index) in peoplesObj" :key="index">{{ names.name }}<button @click="deleateName(names.name)">×</button></span>
     </div>
   </div>
 </template>
-
 <script>
 
-const people = [
-  {name: '一朗さん', checked: false},
-  {name: '二郎さん', checked: false},
-  {name: '三郎さん', checked: false},
-  {name: '四郎さん', checked: false},
-  {name: '五郎さん', checked: false},
-  {name: '六郎さん', checked: false},
-  {name: '七郎さん', checked: false},
-  {name: '八郎さん', checked: false},
-  {name: '九郎さん', checked: false},
-  {name: '十郎さん', checked: false},
-  {name: '十一郎さん', checked: false}, 
-  {name: '十二郎さん', checked: false},
-];
+const people = [];
 
 export default {
   name: 'app',
   data() {
     return {
       initialPeoples: people,
-      peoples: people,
+      peoplesObj: people,
       syoki: '',
       shikai: '',
       msg: '',
       beforePeoplesList: [],
       beforePeopleNames:'',
+      inputPeoplesName: '',
     }
   },
   
   mounted() { // 前回の担当者をブラウザに表示
+  if(!localStorage.getItem('name')) {
+    return;
+  }
     const getData = localStorage.getItem('name'); 
     const formationText = getData.split(',', 2);
     this.beforePeopleNames = formationText.join(', ');
+    this.peoplesObj = JSON.parse(localStorage.getItem('people'));
   },
   methods: {
-    peopleFilter() { // チェック状態の配列を生成
-      this.peoples = this.initialPeoples.filter(people => people.checked);
-    },
-
     returnRandomNum(array) { //randomな整数を返す
       for(let i = array.length -1; i >= 0; i--) {
         const randomPeoples = Math.floor(Math.random() * (i + 1));
@@ -74,18 +62,18 @@ export default {
         const getData = localStorage.getItem('name'); 
         const formationText = getData.split(',', 2);
         const createObj = [{name:formationText[0]},{name:formationText[1]}];
-        this.sortLottery(createObj); 
+        this.sortLottery(createObj);
       }
       return;
     },
     
     allLottery() { //全員のオブジェクトから抽選
-      this.returnRandomNum(this.peoples);
+      this.returnRandomNum(this.peoplesObj);
     },
 
     sortLottery(sort) { //前回の担当を除いたオブジェクトから抽選
-      const peoples = this.peoples;
-      let copyPeoples = [...peoples];
+      const peoples = this.peoplesObj;
+      let copyPeoples = [...this.peoplesObj];
       let filteredAry;
       for(var num in sort) {
         filteredAry = copyPeoples.filter(people => {
@@ -97,17 +85,28 @@ export default {
     },
 
     addPeopleName(targetAry) { //viewに担当者を渡し、localstorageに登録
-      this.syoki = targetAry[0].name;
-      this.shikai = targetAry[1].name;
+      this.syoki = targetAry[0].name + 'さん';
+      this.shikai = targetAry[1].name + 'さん';
       this.msg = 'よろしくおねがいしますm(..)m';
 
-      this.beforePeoplesList = [targetAry[0].name, targetAry[1].name];
+      this.beforePeoplesList = [targetAry[0].name + 'さん', targetAry[1].name + 'さん'];
 
       const emptyObj = [];
       emptyObj.push(this.beforePeoplesList);
       const setItem = JSON.stringify(this.beforePeoplesList);
-      localStorage.setItem('name', this.beforePeoplesList);   
+      localStorage.setItem('name', this.beforePeoplesList);
     },
+    addName() {
+      this.peoplesObj.push({name: this.inputPeoplesName});
+      localStorage.setItem('people', JSON.stringify(this.peoplesObj));
+      
+      this.inputPeoplesName = '';
+
+    },
+    deleateName(name) {
+      this.peoplesObj = this.peoplesObj.filter(people => people.name !== name);
+      localStorage.setItem('people', JSON.stringify(this.peoplesObj));
+    }
   },
 }
 
@@ -125,29 +124,16 @@ export default {
   margin: auto;
   margin-top: 60px;
 }
-.dis-f {
-  display: flex;
-}
-.cnt-w {
-  width: 330px;
-  margin-bottom: 20px;
-}
-.w-50 {
-  width: 50%;
+.last-week-text {
+  font-size: 18px;
 }
 .navy {
   color: #35495e;
 }
-.font-20 {
-  font-size: 20px;
-}
-.text-a-l {
-  text-align: left;
-}
 .bkg-line {
   background: linear-gradient(transparent 70%, #f2b3a2 70%);
 }
-button {
+.choose-btn-item {
   appearance: none;
   outline: none;
   cursor: pointer;
@@ -161,29 +147,46 @@ button {
   background-color: #fffbf4;
   box-shadow: inset 0 3px 0 rgba(255, 255, 255, 1), inset 0 -3px 0 rgba(0, 0, 0, 0.05);
 }
-.button:active {
+.choose-btn-item:active {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.50);
 }
 .click-icon {
   font-size: 50px;
 }
+.staff-wrap {
+  display: flex;
+  width: 330px;
+  margin: auto;
+}
+.staff-wrap p {
+  width: 50%;
+  text-align: left;
+}
 .message {
   font-size: 22px;
   font-weight: bold;
 }
-.mgn-b30 {
-  margin-bottom: 30px;
-}
-.font-w-b {
-  font-weight: bold;
-}
-.mgn-a {
-  margin: auto;
-}
-.mgn-t40 {
-  margin-top: 40px;
-}
 .word-b {
   word-break: keep-all;
+}
+.output-name {
+  margin-right: 20px;
+  margin-bottom: 10px;
+}
+.participant {
+  margin: 30px 0;
+}
+form label {
+  font-size: 14px;
+}
+form input {
+  width: 200px;
+  height: 2em;
+  border-radius: 5px;
+  outline: none;
+}
+.participant-wrap {
+  width: 330px;
+  margin: auto;
 }
 </style>
