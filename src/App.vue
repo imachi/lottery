@@ -72,7 +72,6 @@ export default {
     },
 
     sortLottery(sort) { //前回の担当を除いたオブジェクトから抽選
-      const peoples = this.peoplesObj;
       let copyPeoples = [...this.peoplesObj];
       let filteredAry;
       for(var num in sort) {
