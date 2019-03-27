@@ -80,7 +80,7 @@ export default {
           return people.name !== sort[num].name;
         });
         copyPeoples = filteredAry;
-      };
+      }
       this.returnRandomNum(filteredAry);
     },
 
@@ -93,7 +93,6 @@ export default {
 
       const emptyObj = [];
       emptyObj.push(this.beforePeoplesList);
-      const setItem = JSON.stringify(this.beforePeoplesList);
       localStorage.setItem('name', this.beforePeoplesList);
     },
     addName() {
