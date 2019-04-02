@@ -9,8 +9,12 @@
       <i class="far fa-hand-point-left click-icon faa-horizontal animated"></i>
     </div>
     <div class="staff-wrap">
-      <p class="secretary">書記：<span class="secretary-text bkg-line">{{ syoki }}</span></p>
-      <p class="mc">司会：<span class="mc-text bkg-line">{{ shikai }}</span></p>
+      <p class="secretary">書記：
+        <transition name="fade"><span v-if="syoki" class="secretary-text bkg-line">{{ syoki }}</span></transition>
+      </p>
+      <p class="mc">司会：
+        <transition name="fade"><span v-if="shikai" class="mc-text bkg-line">{{ shikai }}</span></transition>
+      </p>
     </div>
     <div class="message">{{ msg }}</div> 
     <form class="participant" @submit.prevent="addName">
@@ -211,5 +215,11 @@ form input {
   border: none;
   appearance: none;
   outline: none;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .9s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>
