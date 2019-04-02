@@ -1,8 +1,11 @@
 <template>
   <div id="app">
-    <div class="last-week"><p class="last-week-text">#先週の担当者</p><span class="last-week-name">{{ beforePeopleNames }}</span></div>
+    <div class="last-week">
+      <p class="last-week-text">#先週の担当者</p>
+      <span class="last-week-name">{{ beforePeopleNames }}</span>
+    </div>
     <div class="choose-btn">
-      <button class="choose-btn-item" @click="localStorageFind()">指名する</button>
+      <button class="choose-btn-item" @click="addPeoplesName">指名する</button>
       <i class="far fa-hand-point-left click-icon faa-horizontal animated"></i>
     </div>
     <div class="staff-wrap">
@@ -14,101 +17,101 @@
       <label>参加者: </label><input type="text" class="input-name" v-model="inputPeoplesName">
     </form>
     <div class="participant-wrap">
-      <span class="output-name" v-for="(names, index) in peoplesObj" :key="index">{{ names.name }}<button @click="deleateName(names.name)">×</button></span>
+      <span class="output-name" v-for="(names, index) in peoples" :key="index">
+        {{ names.name }}
+        <button class="name-deleate" @click="deleateName(names.name)">
+          <i class="far fa-window-close"></i>
+        </button>
+      </span>
     </div>
   </div>
 </template>
+
 <script>
-
-const people = [];
-
 export default {
   name: 'app',
   data() {
     return {
-      initialPeoples: people,
-      peoplesObj: people,
+      peoples: [],
+      lastWeekPeoples: [],
+      writeLastWeekPeoples: [],
       syoki: '',
       shikai: '',
       msg: '',
-      beforePeoplesList: [],
       beforePeopleNames:'',
       inputPeoplesName: '',
     }
   },
-  
-  mounted() { // 前回の担当者をブラウザに表示
-  if(!localStorage.getItem('name')) {
-    return;
-  }
-    const getData = localStorage.getItem('name'); 
-    const formationText = getData.split(',', 2);
-    this.beforePeopleNames = formationText.join(', ');
-    this.peoplesObj = JSON.parse(localStorage.getItem('people'));
+
+  created() {
+    const storePeoples = localStorage.getItem('peoples');
+    const storeLastWeekPeoples = localStorage.getItem('lastweekName');
+    if(storePeoples) {
+      this.peoples = JSON.parse(storePeoples);
+    }
+    if(storeLastWeekPeoples) {
+      this.lastWeekPeoples = JSON.parse(storeLastWeekPeoples);
+    }
   },
+
+  computed: {
+    filterAry() {
+      return this.peoples.filter(people => {
+        const lastWeekNames = this.lastWeekPeoples.map(
+          lastWeekPeople => lastWeekPeople.name 
+        );
+        return !lastWeekNames.includes(people.name)
+      })
+    },
+    
+    shufflePeoples() {
+      return this.returnRandomNum(this.filterAry);
+    }
+  },
+
+  mounted() {
+    if(!localStorage.getItem('lastweekWriteName')) {
+      return;
+    }
+    const getStoreLastName = localStorage.getItem('lastweekWriteName'); 
+    this.beforePeopleNames = getStoreLastName;
+  },
+
   methods: {
-    returnRandomNum(array) { //randomな整数を返す
+    returnRandomNum(array) {
       for(let i = array.length -1; i >= 0; i--) {
         const randomPeoples = Math.floor(Math.random() * (i + 1));
         [array[i], array[randomPeoples]] = [array[randomPeoples], array[i]];
       }
-      this.addPeopleName(array);
+      return array;
     },
 
-    localStorageFind() { //windowload時にlocalstorageのnameキーを見に行く
-      if(!localStorage.getItem('name')) {
-        this.allLottery();
-      } else { //localStorageの文字列をオブジェクトに形成
-        const getData = localStorage.getItem('name'); 
-        const formationText = getData.split(',', 2);
-        const createObj = [{name:formationText[0]},{name:formationText[1]}];
-        this.sortLottery(createObj);
+    addPeoplesName() {
+      if(!this.shufflePeoples.length) {
+        return false;
       }
-      return;
-    },
-    
-    allLottery() { //全員のオブジェクトから抽選
-      this.returnRandomNum(this.peoplesObj);
-    },
-
-    sortLottery(sort) { //前回の担当を除いたオブジェクトから抽選
-      let copyPeoples = [...this.peoplesObj];
-      let filteredAry;
-      for(var num in sort) {
-        filteredAry = copyPeoples.filter(people => {
-          return people.name !== sort[num].name;
-        });
-        copyPeoples = filteredAry;
-      }
-      this.returnRandomNum(filteredAry);
-    },
-
-    addPeopleName(targetAry) { //viewに担当者を渡し、localstorageに登録
-      this.syoki = targetAry[0].name + 'さん';
-      this.shikai = targetAry[1].name + 'さん';
+      this.syoki = this.shufflePeoples[0].name + 'さん';
+      this.shikai = this.shufflePeoples[1].name + 'さん';
       this.msg = 'よろしくおねがいしますm(..)m';
-
-      this.beforePeoplesList = [targetAry[0].name + 'さん', targetAry[1].name + 'さん'];
-
-      const emptyObj = [];
-      emptyObj.push(this.beforePeoplesList);
-      localStorage.setItem('name', this.beforePeoplesList);
+      const cutOutSyoki = this.syoki.slice(0, -2);
+      const cutOutShikai = this.shikai.slice(0, -2);
+      localStorage.setItem('lastweekName', JSON.stringify([{name: cutOutSyoki}, {name: cutOutShikai}]));
+      localStorage.setItem('lastweekWriteName', [this.syoki, this.shikai]);
     },
-    addName() {
-      this.peoplesObj.push({name: this.inputPeoplesName});
-      localStorage.setItem('people', JSON.stringify(this.peoplesObj));
-      
-      this.inputPeoplesName = '';
 
-    },
     deleateName(name) {
-      this.peoplesObj = this.peoplesObj.filter(people => people.name !== name);
-      localStorage.setItem('people', JSON.stringify(this.peoplesObj));
-    }
-  },
-}
+      this.peoples = this.peoples.filter(people => people.name !== name);
+      localStorage.setItem('peoples', JSON.stringify(this.peoples));
+    },
 
+    addName() {
+      this.peoples.push({name: this.inputPeoplesName});
+      localStorage.setItem('peoples', JSON.stringify(this.peoples));
 
+      this.inputPeoplesName = '';
+    },
+  }
+};
 </script>
 
 <style scoped>
@@ -122,8 +125,16 @@ export default {
   margin: auto;
   margin-top: 60px;
 }
+.last-week {
+  margin-bottom: 20px;
+}
 .last-week-text {
-  font-size: 18px;
+  margin: 0;
+  margin-bottom: 20px;
+  font-size: 3vw;
+}
+.last-week-name {
+  font-size: 2vw;
 }
 .navy {
   color: #35495e;
@@ -131,15 +142,18 @@ export default {
 .bkg-line {
   background: linear-gradient(transparent 70%, #f2b3a2 70%);
 }
+.choose-btn {
+  margin-bottom: 20px;
+}
 .choose-btn-item {
   appearance: none;
   outline: none;
   cursor: pointer;
-  width: 280px;
+  width: 39%;
   height: 70px;
   border: solid 3px #ee8d72;
   border-radius: 11px;
-  font-size: 22px;
+  font-size: 2vw;
   font-weight: bold;
   color: #ee8d72;
   background-color: #fffbf4;
@@ -153,38 +167,49 @@ export default {
 }
 .staff-wrap {
   display: flex;
-  width: 330px;
+  width: 70%;
   margin: auto;
 }
 .staff-wrap p {
   width: 50%;
   text-align: left;
+  font-size: 3vw;
 }
 .message {
-  font-size: 22px;
+  font-size: 3vw;
   font-weight: bold;
 }
 .word-b {
   word-break: keep-all;
 }
 .output-name {
-  margin-right: 20px;
+  font-size: 2vw;
+  margin-right: 4%;
   margin-bottom: 10px;
 }
+.output-name i {
+  font-size: 2vw;
+}
 .participant {
-  margin: 30px 0;
+  margin: 35px 0;
 }
 form label {
-  font-size: 14px;
+  font-size: 2vw;
 }
 form input {
-  width: 200px;
-  height: 2em;
+  width: 40%;
+  height: 3vw;
+  font-size: 2vw;
   border-radius: 5px;
   outline: none;
 }
 .participant-wrap {
-  width: 330px;
+  width: 70%;
   margin: auto;
+}
+.name-deleate {
+  border: none;
+  appearance: none;
+  outline: none;
 }
 </style>
