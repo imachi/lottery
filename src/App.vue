@@ -53,23 +53,11 @@ export default {
     if(storePeoples) {
       this.peoples = JSON.parse(storePeoples);
     }
-    if(storeLastWeekPeoples) {
-      this.lastWeekPeoples = JSON.parse(storeLastWeekPeoples);
-    }
   },
 
   computed: {
-    filterAry() {
-      return this.peoples.filter(people => {
-        const lastWeekNames = this.lastWeekPeoples.map(
-          lastWeekPeople => lastWeekPeople.name 
-        );
-        return !lastWeekNames.includes(people.name)
-      })
-    },
-    
     shufflePeoples() {
-      return this.returnRandomNum(this.filterAry);
+      return this.returnRandomNum(this.peoples);
     }
   },
 
